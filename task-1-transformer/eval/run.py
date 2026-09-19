@@ -5,8 +5,9 @@
 """
 import sys
 from pathlib import Path
-
+import pandas as pd
 import torch
+from collections import Counter
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +40,18 @@ def test_attention_correctness():
         "max_abs_diff": diff,
     }
 
+def build_personal_vocab(tokens,vocab_len=2500):
+    counter=Counter()
+    for text in tokens:
+        counter.update(list(text))
+    special_token=['<pad>','<unk>','<bos>','<eos>']
+    chars=[c for c,_ in counter.most_common(vocab_len-len(special_token))]
+    vocab=special_token+chars
+    word2idx={w:i for i,w in enumerate(vocab)}
+    idx2word={i:w for i,w in enumerate(vocab)}
+    return vocab,word2idx,idx2word
 
+device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def test_causal_mask():
     """causal mask 下，位置 i 的输出不应被位置 j>i 的 V 改动影响。"""
     from src.attention import scaled_dot_product_attention
@@ -62,8 +74,11 @@ def test_causal_mask():
         "pass": leaked < 1e-6,
         "leaked_diff": leaked,
     }
+global word2idx
 
-
+df=pd.read_parquet('data/train.parquet')
+text=df['text'].tolist()
+vocab,word2idx,idx2word=build_personal_vocab(text)
 def test_classifier_accuracy():
     """跑学生训练好的 checkpoint 在 ChnSentiCorp dev set 上的准确率。"""
     ckpt = ROOT / "ckpt" / "best.pt"
@@ -85,7 +100,7 @@ def test_classifier_accuracy():
     import pandas as pd
     dev = pd.read_parquet(dev_path)
 
-    model, tokenize_fn = load_for_eval(str(ckpt))
+    model, tokenize_fn = load_for_eval(str(ckpt),word2idx)
     model.eval()
 
     correct = 0
