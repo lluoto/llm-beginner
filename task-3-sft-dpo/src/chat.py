@@ -2,7 +2,10 @@ from torch import nn
 import torch
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoTokenizer
-tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B")
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+model_path = ROOT / "models" / "Qwen2.5-0.5B"
+tok = AutoTokenizer.from_pretrained(str(model_path))
 
 start_id=151644
 end_id=151645
