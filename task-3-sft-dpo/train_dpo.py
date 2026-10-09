@@ -202,7 +202,8 @@ def main():
                         total_loss+=curr_loss
                 average_loss=total_loss/len(test_set)
                 average_ppl=math.exp(average_loss)
-                print(f'\nStep {step} finished, average loss:{curr_loss},average_ppl:{average_ppl}, accuracy:{((lp_w-lr_w)>(lp_l-lr_l)).float().mean()}\n',flush=True)
+                accuracy=((lp_w-lr_w)>(lp_l-lr_l)).float().mean()
+                print(f'\nStep {step} finished, average loss:{curr_loss},average_ppl:{average_ppl}, accuracy:{accuracy}\n',flush=True)
                 runtime_writer.add_scalar('ppl',average_ppl,accumulate_step)
                 runtime_writer.flush()
                 if average_ppl<best_ppl*(1-args.relative_rate):
@@ -215,7 +216,7 @@ def main():
                     none_improve+=1
                     if none_improve>=args.patience:
                         skip=True
-                        shutil.copyfile(f'ckpt','ckpt/dpo/best.pt')
+                        shutil.copyfile(f'ckpt/dpo/{i}.pt','ckpt/dpo/best.pt')
                         break
 
         runtime_writer.add_hparams(hparams,{'ppl':best_ppl},run_name=f'seed_{current_seed}')
