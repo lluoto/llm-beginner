@@ -208,7 +208,7 @@ def main():
                 if average_ppl<best_ppl*(1-args.relative_rate):
                     best_ppl=average_ppl
                     none_improve=0
-                    lora_state={k:v for k,v in policy.state_dict() if 'lora' in k.lower()}
+                    lora_state={k:v for k,v in policy.state_dict().items() if 'lora' in k.lower()}
                     torch.save(lora_state,f'ckpt/dpo/{i}.pt')
                     print(f'\n seed {current_seed} epoch {i} update best ppl')
                 else:
