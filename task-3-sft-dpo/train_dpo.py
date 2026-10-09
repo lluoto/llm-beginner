@@ -202,7 +202,7 @@ def main():
                         total_loss+=curr_loss
                 average_loss=total_loss/len(test_set)
                 average_ppl=math.exp(average_loss)
-                print(f'\nStep {step} finished, average loss:{curr_loss},average_ppl:{average_ppl} \n',flush=True)
+                print(f'\nStep {step} finished, average loss:{curr_loss},average_ppl:{average_ppl}, accuracy:{((lp_w-lr_w)>(lp_l-lr_l)).float().mean()}\n',flush=True)
                 runtime_writer.add_scalar('ppl',average_ppl,accumulate_step)
                 runtime_writer.flush()
                 if average_ppl<best_ppl*(1-args.relative_rate):
