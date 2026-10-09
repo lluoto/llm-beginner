@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import json
 from pathlib import Path
-
+device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class inject_lora(nn.Module):
     def __init__(self,model,target_modules=None,r=8,alpha=16,trainable_rate=0.03):
@@ -22,8 +22,10 @@ class inject_lora(nn.Module):
                 in_feat=module.in_features
                 out_feat=module.out_features
                 assert trainable_rate <0.05
-                module.lora_A=nn.Parameter(torch.randn(self.r,in_feat,dtype=torch.bfloat16)*trainable_rate)
-                module.lora_B=nn.Parameter(torch.zeros(out_feat,self.r,dtype=torch.bfloat16))
+                lora_a=torch.randn(self.r,in_feat,dtype=torch.bfloat16,device=device)*trainable_rate
+                lora_b=torch.zeros(out_feat,self.r,dtype=torch.bfloat16,device=device)
+                module.lora_A=nn.Parameter(lora_a)
+                module.lora_B=nn.Parameter(lora_b)
                 origin_forward=module.forward
                 def _lora_forward(self_,x,_orig=origin_forward):
                     lora_out=(self.alpha/self.r)*(x @ self_.lora_A.T @ self_.lora_B.T)
