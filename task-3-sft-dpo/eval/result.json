@@ -1,0 +1,20 @@
+[
+  {
+    "test": "lora_param_count",
+    "pass": true,
+    "trainable": 540672,
+    "total": 494573440,
+    "ratio": 0.00109
+  },
+  {
+    "test": "loss_masking",
+    "pass": true,
+    "mask_ratio": 0.4,
+    "note": "若不在 (0.2, 0.9) 范围，请检查 user/system 是否全部 -100"
+  },
+  {
+    "test": "sft_vs_base",
+    "pass": true,
+    "note": "仅校验 ckpt/sft 非空；输出质量请手动跑 src/compare.py 对比 base 与 SFT 并附在提交里"
+  }
+]
