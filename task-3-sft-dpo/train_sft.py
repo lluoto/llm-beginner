@@ -137,7 +137,7 @@ def main():
         )
     lora_model=inject_lora(model,target_modules=['q_proj','k_proj','v_proj'],r=args.r_lora_rate,alpha=args.alpha_lora_rate,trainable_rate=args.train_rate)
     
-    lora_model=lora_model.cuda(device)
+    lora_model=lora_model.to(device)
     lora_model.train()
 
     optimizer=AdamW(lora_model.parameters(),args.learning_rate,weight_decay=args.weight_decay)
@@ -168,7 +168,7 @@ def main():
                         output=lora_model(input_ids=test_input,labels=test_target)
                         valid_set_loss=output.loss
                         total_loss+=valid_set_loss.item()
-                average_loss=total_loss/len(train_set)
+                average_loss=total_loss/len(test)
                 average_ppl=math.exp(average_loss)
                 print(f'\nStep {step} finished, average loss:{curr_loss},average_ppl:{average_ppl} \n',flush=True)
                 runtime_writer.add_scalar('ppl',average_ppl,accumulate_step)
@@ -176,7 +176,11 @@ def main():
                 if average_ppl<best_ppl*(1-args.relative_rate):
                     best_ppl=average_ppl
                     none_improve=0
-                    torch.save(lora_model.state_dict(),f'ckpt/sft/{i}.pt')
+                    lora_state = {
+                        k: v for k, v in model.state_dict().items()
+                        if 'lora' in k.lower()          # 按你的命名规则
+                    }
+                    torch.save(lora_state,f'ckpt/sft/{i}.pt')
                     print(f'\n seed {current_seed} epoch {i} update best ppl')
                 else:
                     none_improve+=1
