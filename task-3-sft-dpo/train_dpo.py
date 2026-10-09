@@ -63,8 +63,12 @@ def collate_pad(batch):
             }
 
 def build_dpo_batch(file_dir,model,max_len=512,pad_token_id=0):
-    with open(file_dir,'r') as f:
-        a=json.load(f)
+    file_datas=[]
+    for file in os.listdir(file_dir):
+        if file.endswith('.json'):
+            with open(os.path.join(file_dir,file),'r') as f:
+                a=json.load(f)
+                file_datas+=a
         # print(a[:10][1]['conversations'])#conversations，chosen,rejected
 
     # with open(file_dir.replace('zh','zh_simple'),'w',encoding='utf-8')as f:
@@ -72,7 +76,7 @@ def build_dpo_batch(file_dir,model,max_len=512,pad_token_id=0):
     #     json.dump(cut,f,ensure_ascii=False,indent=2)
     max_len=int(max_len)
     all_data=[]
-    for sessions in tqdm(a,desc='building dpo labels'):
+    for sessions in tqdm(file_datas,desc='building dpo labels'):
         win_sessions_list,lose_sessions_list=[],[]
         win_sessions_list.append({'role':'user','content':sessions['conversations']})
         win_sessions_list.append({'role':'assistant','content':sessions['chosen']['value']})
@@ -89,7 +93,7 @@ def build_dpo_batch(file_dir,model,max_len=512,pad_token_id=0):
 
 def parser_para():
     parser=argparse.ArgumentParser(description='Transformer for emotion labeling')
-    parser.add_argument('--dataset','-d',type=str,default='data/dpo/dpo_zh.json')
+    parser.add_argument('--dataset','-d',type=str,default='data/dpo/')
     # parser.add_argument('--dataset','-d',type=str,default='data/dpo/dpo_zh_simple.json')
     parser.add_argument('--train_rate','-t',type=float,default=0.03)
     parser.add_argument('--epoches','-e',type=int,default='50')

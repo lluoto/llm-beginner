@@ -49,7 +49,7 @@ def collate_pad_crop(batch):
 
 def build_sft_batch(file_dir,model,max_len=512,pad_token_id=0):
     with open(file_dir,'r',encoding='utf-8') as f:
-        r=[json.loads(line) for line in f if line.strip()][:500]
+        r=[json.loads(line) for line in f if line.strip()]
 
     # with open(file_dir.replace('moss-003-sft-no-tools','simple'),'a',encoding='utf-8')as f:
     #     for item in r[:300]:
@@ -186,7 +186,7 @@ def main():
                     none_improve+=1
                     if none_improve>=args.patience:
                         skip=True
-                        shutil.copyfile(f'ckpt','ckpt/sft/best.pt')
+                        shutil.copyfile(f'ckpt/sft/{i}.pt','ckpt/sft/best.pt')
                         break
 
         runtime_writer.add_hparams(hparams,{'ppl':best_ppl},run_name=f'seed_{current_seed}')

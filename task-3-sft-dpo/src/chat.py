@@ -27,8 +27,8 @@ def build_labels(ids,msgs,max_len=64):
     labels=ids.clone()
     labels[:]=-100
     in_assistant=False
-    megs_id=-1
     for i in range(len(ids)):
+        megs_id=0
         if ids[i]==start_id:
             if i+1 < len(ids) and ids[i+1]==tok(msgs[megs_id]['role'],return_tensors="pt").input_ids[0]:
                 in_assistant=True
