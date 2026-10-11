@@ -73,8 +73,8 @@ def build_sft_batch(file_dir,model,max_len=512,pad_token_id=0):
 
 def parser_para():
     parser=argparse.ArgumentParser(description='Transformer for emotion labeling')
-    # parser.add_argument('--dataset','-d',type=str,default='data/moss-sft/moss-003-sft-no-tools.jsonl')
-    parser.add_argument('--dataset','-d',type=str,default='data/moss-sft/simple.jsonl')
+    # parser.add_argument('--dataset','-d',type=str,default='data/moss-003-sft-no-tools.jsonl')
+    parser.add_argument('--dataset','-d',type=str,default='data/simple.jsonl')
     parser.add_argument('--train_rate','-t',type=float,default=0.03)
     parser.add_argument('--epoches','-e',type=int,default='50')
     parser.add_argument('--batch_size','-b',type=int,default='2')
