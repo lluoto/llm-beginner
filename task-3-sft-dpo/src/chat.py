@@ -9,8 +9,7 @@ tok = AutoTokenizer.from_pretrained(str(model_path))
 
 start_id=151644
 end_id=151645
-user=77091
-assistant=872
+
 def format_messages(msgs):
     round_chat=['<|im_start|>system\nYou are a helpful assistant<|im_end|>']
     for message in msgs:
@@ -18,8 +17,7 @@ def format_messages(msgs):
 '<|im_start|>{role}\n{content}<|im_end|>\n'.format(role=message['role'],content=message['content'])
             )
 
-    round_chat.append('')
-    return "\n".join(round_chat)
+    return "".join(round_chat)
 def build_labels(ids,msgs,max_len=64):
 
     if not msgs or max_len<1:
@@ -27,13 +25,11 @@ def build_labels(ids,msgs,max_len=64):
     labels=ids.clone()
     labels[:]=-100
     in_assistant=False
+    megs_id=0,in_assistant=False
+
     for i in range(len(ids)):
-        megs_id=0
         if ids[i]==start_id:
-            if i+1 < len(ids) and ids[i+1]==tok(msgs[megs_id]['role'],return_tensors="pt").input_ids[0]:
-                in_assistant=True
-            else:
-                in_assistant=False
+            in_assistant=(megs_id<len(msgs) and msgs[megs_id]['role']=='assistant')
             labels[i]=-100
             megs_id+=1
         elif ids[i]==end_id:
