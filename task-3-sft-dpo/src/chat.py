@@ -1,6 +1,3 @@
-from torch import nn
-import torch
-from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoTokenizer
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,7 +8,7 @@ start_id=151644
 end_id=151645
 
 def format_messages(msgs):
-    round_chat=['<|im_start|>system\nYou are a helpful assistant<|im_end|>']
+    round_chat=['<|im_start|>system\nYou are a helpful assistant<|im_end|>\n']
     for message in msgs:
         round_chat.append(
 '<|im_start|>{role}\n{content}<|im_end|>\n'.format(role=message['role'],content=message['content'])
@@ -25,11 +22,12 @@ def build_labels(ids,msgs,max_len=64):
     labels=ids.clone()
     labels[:]=-100
     in_assistant=False
-    megs_id=0,in_assistant=False
+    megs_id=-1
 
     for i in range(len(ids)):
         if ids[i]==start_id:
-            in_assistant=(megs_id<len(msgs) and msgs[megs_id]['role']=='assistant')
+            role=msgs[megs_id]['role'] if 0 < megs_id<len(msgs) else None
+            in_assistant=(role=='assistant')
             labels[i]=-100
             megs_id+=1
         elif ids[i]==end_id:
