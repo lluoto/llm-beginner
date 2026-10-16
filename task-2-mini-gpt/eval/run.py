@@ -65,7 +65,7 @@ def test_kv_cache_equivalence():
 def test_perplexity_on_dev():
     from src.model import load_for_eval
     ckpt = ROOT / "ckpt" / "best.pt"
-    dev_path = ROOT / "data" / "dev.txt"
+    dev_path = ROOT / "data" /"simple"/ "dev.txt" 
     info = load_dataset_info()
     threshold = float(info.get("ppl_threshold", 200))
     if not ckpt.exists():
@@ -86,7 +86,7 @@ def test_perplexity_on_dev():
             window = ids[i:i + block + 1]
             if len(window) < 2:
                 break
-            chunk = torch.tensor([window], dtype=torch.long)
+            chunk = torch.tensor([window], dtype=torch.long).to('cuda')
             logits = model(chunk)
             nll += F.cross_entropy(
                 logits[:, :-1].reshape(-1, logits.size(-1)),

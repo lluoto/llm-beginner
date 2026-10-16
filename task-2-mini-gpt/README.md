@@ -108,6 +108,7 @@ python data/download.py --dataset skypile       # ~1GB+，建议 GPU
 
 实现 greedy / top-k / top-p / temperature，对比同一 prompt 下的生成多样性与连贯度。
 
+
 **常见坑**：
 
 - top-p 要先按概率降序累加到阈值再截断，别忘了重新归一化
