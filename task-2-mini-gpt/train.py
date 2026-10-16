@@ -79,8 +79,8 @@ def parser_para():
         parser.add_argument('--test_dir','-test',type=str,default='data/simple/poetry.txt')
     parser.add_argument('--epochs','-e',type=int,default='50')
     parser.add_argument('--batch_size','-b',type=int,default='16')
-    parser.add_argument('--dimention_of_model','-dmodel',type=int,default='256')#128
-    parser.add_argument('--dimention_of_FFN','-dff',type=int,default='1024')
+    parser.add_argument('--dimention_of_model','-dmodel',type=int,default='256')# pass:8
+    parser.add_argument('--dimention_of_FFN','-dff',type=int,default='1024')#pass : 32
     parser.add_argument('--dropout_rate','-d',type=float,default='0.1')
     parser.add_argument('--layer_number','-l',type=int,default='12')#62 *256*1024 =50 M 12 * 256*1024=10M
     parser.add_argument('--seed','-s',type=int,default='114514')
