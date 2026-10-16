@@ -1,0 +1,20 @@
+[
+  {
+    "test": "tokenizer_roundtrip",
+    "pass": true,
+    "failures": []
+  },
+  {
+    "test": "kv_cache_equivalence",
+    "pass": true,
+    "max_abs_diff": 1.9073486328125e-06
+  },
+  {
+    "test": "perplexity_on_dev",
+    "pass": true,
+    "perplexity": 19.73,
+    "threshold": 50.0,
+    "n_tokens": 4095,
+    "dataset": "simple"
+  }
+]

@@ -1,0 +1,7 @@
+{
+    "dataset": "simple",
+    "train": "simple/train.txt",
+    "dev": "simple/dev.txt",
+    "ppl_threshold": 50
+  }
+  
