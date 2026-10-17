@@ -89,7 +89,8 @@ class MiniGPT(nn.Module):
                 mask=(ids==self.pad_token_id)
             x=self.block(ids,mask,kv_cache,return_cache)
             return x
-    def generate(self,prompt_ids,temperature,top_k=None,top_p=None,mask=None,return_cache=False,max_len=64):
+    def generate(self,prompt_ids,temperature,top_k=None,top_p=None,mask=None,
+                 return_cache=False,max_len=64):
 
         self.reset_kv_cache()
         max_len=max_len or self.max_len
@@ -99,11 +100,11 @@ class MiniGPT(nn.Module):
             logits,self.kv_cache=out
         else:
             logits=out
-        next_logits=logits[:,-1,:].clone()
-        next_logits[:,self.pad_token_id]=float('-inf')
-        output_idx=prompt_ids[:,-1:]
+        generated=torch.empty(prompt_ids.size(0),0,dtype=prompt_ids.dtype,device=prompt_ids.device)
+        while generated.size(1)<max_len:
+            next_logits=logits[:,-1,:].clone()
+            next_logits[:,self.pad_token_id]=float('-inf')
 
-        while output_idx.size(1)<max_len:
             if temperature==0:
                 next_id=next_logits.argmax(dim=-1,keepdim=True)
             else:
@@ -119,7 +120,6 @@ class MiniGPT(nn.Module):
                     keep[...,1:]=keep[...,1:]|keep[...,:-1]
                     keep[...,0]=1
                     next_logits=torch.where(keep,sort_logits,float('-inf'))
-                    assert torch.isfinite(prob).all()
                 prob=torch.softmax(next_logits,dim=-1)
                 next_id=torch.multinomial(prob,1)
                 # 采样下标先经 top_p 还原到 top_k 下标，再经 top_k 还原到词表下标；
@@ -129,15 +129,15 @@ class MiniGPT(nn.Module):
                 if top_k:
                     next_id=topk_indice.gather(-1,next_id)
 
-            output_idx=torch.cat([output_idx,next_id],dim=1)
-            if output_idx.size(1)>=max_len:break
-            out=self.forward(next_id,mask,self.kv_cache,return_cache)
+            generated=torch.cat([generated,next_id],dim=1)
+            if generated.size(1)>=max_len:
+                break
             if return_cache:
-                logits,self.kv_cache=out
+                logits,self.kv_cache=self.forward(next_id,mask,self.kv_cache,True)
             else:
-                logits=out
-            next_logits=logits[:,-1,:]
-        return output_idx
+                # 不开 cache：每步喂 prompt+已生成，等价于 O(T^2) 全量前向
+                logits=self.forward(torch.cat([prompt_ids,generated],dim=1),mask,None,False)
+        return torch.cat([prompt_ids,generated],dim=1)
     def reset_kv_cache(self):
         self.kv_cache=None
     
