@@ -119,13 +119,17 @@ def run_benchmark(model,BPE_processor,args,writer):
         writer.flush()
 
 
-def run_sweep(model,BPE_processor,test_set,configs,max_len,n_samples):
+def run_sweep(model,BPE_processor,test_set,configs,max_len,n_samples,writer):
+    global_step=0
     for return_cache in (False,True):
         for config in configs:
             for bi,batch in enumerate(test_set):
                 if n_samples and bi>=n_samples:
                     break
                 inp=batch[:,:-1].to(device)
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+                t0=perf_counter()
                 with torch.no_grad():
                     output=model.generate(inp,
                                           temperature=config['temperature'],
@@ -133,7 +137,15 @@ def run_sweep(model,BPE_processor,test_set,configs,max_len,n_samples):
                                           top_p=config['top_p'],
                                           return_cache=return_cache,
                                           max_len=max_len)
-                print(BPE_processor.decode(output[0]),f"[[{config['name']} cache={return_cache}]]",flush=True)
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+                elapsed=perf_counter()-t0
+                poem=BPE_processor.decode(output[0])
+                print(poem,f"[[{config['name']} cache={return_cache}]]",flush=True)
+                tag=config['name'].replace('.','')
+                writer.add_text(f'sample/{tag}_cache{return_cache}',poem,global_step=bi)
+                writer.add_scalar(f'time_per_sample/cache{return_cache}',elapsed,global_step=global_step)
+                global_step+=1
 
 
 def main():
@@ -158,10 +170,13 @@ def main():
                                           top_p=config['top_p'],
                                           return_cache=return_cache,
                                           max_len=args.max_len)
-                print(BPE_processor.decode(output[0]),f"[[{config['name']} cache={return_cache}]]",flush=True)
+                poem=BPE_processor.decode(output[0])
+                print(poem,f"[[{config['name']} cache={return_cache}]]",flush=True)
+                tag=config['name'].replace('.','')
+                writer.add_text(f'sample/{tag}_cache{return_cache}',poem,global_step=0)
     else:
         test_set=DataLoader(dataset=read_dataset(args.test_dir,BPE_processor,args.max_len),batch_size=args.batch_size)
-        run_sweep(model,BPE_processor,test_set,configs,args.max_len,args.n_samples)
+        run_sweep(model,BPE_processor,test_set,configs,args.max_len,args.n_samples,writer)
 
     writer.flush()
     writer.close()
