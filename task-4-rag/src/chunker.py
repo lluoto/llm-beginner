@@ -2,6 +2,8 @@ import os
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import torch
+import random
+random.seed(1111)
 from collections import Counter
 def flatten_outline(reader,outline=None,level=0):
     if outline is None:
@@ -108,17 +110,20 @@ def chunks_text(sample,chunk_size,overlap=32):
 
         for chap in candidate_text:
             chap_sentence=chap.strip('\n ').split('。')
-            for i in range(len(chapters)):
-                while len(candidate_text)<chunk_size:
-                    overlap_start=chunk_size-overlap
-                    current,candidate_text=candidate_text[:chunk_size],candidate_text[overlap_start:]
+            for sentence in range(len(chap_sentence)):
+                while len(sentence)<chunk_size:
+                    frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
+                    overlap_start=frustrate_chunk-overlap
+                    current,sentence=sentence[:frustrate_chunk],sentence[overlap_start:]
                     embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
     else:
         candidate_text=candidate_text.strip('\n ').split('。')
         embed_vectors=[]
         for i in range(len(candidate_text)):
             while len(candidate_text)<chunk_size:
-                overlap_start=chunk_size-overlap
-                current,candidate_text=candidate_text[:chunk_size],candidate_text[overlap_start:]
+                frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
+
+                overlap_start=frustrate_chunk-overlap
+                current,candidate_text=candidate_text[:frustrate_chunk],candidate_text[overlap_start:]
                 embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
     return embed_vectors
