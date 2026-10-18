@@ -38,9 +38,10 @@ def collate_pad(batch):
     lose_input_labels_padded=pad_sequence(lose_input_labels,batch_first=True,padding_value=-100)
     win_attn=(win_input_ids_padded!=151643).long()
     lose_attn=(lose_input_ids_padded!=151643).long()
+    prompt_attn=(win_prompt_ids_padded!=151643).long()
     return {'win_input_ids':win_input_ids_padded,'win_labels':win_input_labels_padded,'win_attn':win_attn,
             'lose_input_ids':lose_input_ids_padded,'lose_labels':lose_input_labels_padded,'lose_attn':lose_attn,
-            'win_prompt_ids':win_prompt_ids_padded
+            'win_prompt_ids':win_prompt_ids_padded,'prompt_attn':prompt_attn
             }
 def stats(gen_texts):
     avg_len=sum(len(t) for t in gen_texts)/len(gen_texts)
@@ -80,7 +81,6 @@ def parser_para():
     parser.add_argument('--seed','-s',type=int,default='114514')
     parser.add_argument('--r_lora_rate','-r',type=int,default='8')
     parser.add_argument('--alpha_lora_rate','-a',type=int,default='16')
-    parser.add_argument('--max_len','-m',type=int,default='512')
     parser.add_argument('--new_token','-n',type=int,default='128')
     parser.add_argument('--dpo_beta','-beta',type=int,default=0.1)
     return parser

@@ -47,7 +47,8 @@ def collate_pad_crop(batch):
     input_labels_padded=pad_sequence(input_labels,batch_first=True,padding_value=-100)
     return {'input_ids':input_ids_padded,'labels':input_labels_padded,'attention_mask':attention_mask}
 
-def build_sft_batch(file_dir,model,max_len=512,pad_token_id=151643):
+def build_sft_batch(file_dir,model,max_len=512,pad_token_id=151643
+                    ):
     with open(file_dir,'r',encoding='utf-8') as f:
         r=[json.loads(line) for line in islice((l for l in f if l.strip()),20000)]
 
