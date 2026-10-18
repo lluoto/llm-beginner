@@ -4,6 +4,10 @@ data/*.parquet
 data/*.bin
 data/*.json
 ckpt/
+runs/simple/seed_1111111/
+runs/simple/seed_1111111_11/
+runs/simple/seed_1111111_62/
+runs/simple/seed_1111111_127/
 src/__pycache__/
 eval/__pycache__/
 eval/result.json
