@@ -8,9 +8,9 @@ from torch.nn.utils.rnn import pad_sequence
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader,Dataset
-from src.chat import format_messages,build_labels
+from chat import format_messages,build_labels
 
-from src.lora import inject_lora
+from lora import inject_lora
 from transformers import AutoTokenizer,AutoModelForCausalLM
 from pathlib import Path
 import json
