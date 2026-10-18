@@ -136,7 +136,7 @@ def main():
             model.load_state_dict(state,strict=False)
         with torch.no_grad():
             accumulation_step=1
-            for batch in valid_set:
+            for batch in tqdm(valid_set):
                 model.eval()
                 win_ids,win_label,win_attn,lose_ids,lose_label,lose_attn,win_prompt_id,prompt_attn=batch.values()
                 win_attn,lose_attn,prompt_attn=win_attn.to(device),lose_attn.to(device),prompt_attn.to(device)
