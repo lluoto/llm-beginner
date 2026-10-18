@@ -2,7 +2,6 @@ import os
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import torch
-from dataclasses import dataclass
 from collections import Counter
 def flatten_outline(reader,outline=None,level=0):
     if outline is None:
@@ -112,7 +111,7 @@ def chunks_text(sample,chunk_size,overlap=32):
             for i in range(len(chapters)):
                 while len(candidate_text)<chunk_size:
                     overlap_start=chunk_size-overlap
-                    current,candidate_text=candidate_text[:chunk_size],candidate_text[chunk_size+1:]
+                    current,candidate_text=candidate_text[:chunk_size],candidate_text[overlap_start:]
                     embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
     else:
         candidate_text=candidate_text.strip('\n ').split('。')
@@ -120,6 +119,6 @@ def chunks_text(sample,chunk_size,overlap=32):
         for i in range(len(candidate_text)):
             while len(candidate_text)<chunk_size:
                 overlap_start=chunk_size-overlap
-                current,candidate_text=candidate_text[:chunk_size],candidate_text[overlap_start+1:]
+                current,candidate_text=candidate_text[:chunk_size],candidate_text[overlap_start:]
                 embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
     return embed_vectors
