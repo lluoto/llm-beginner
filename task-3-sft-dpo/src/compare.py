@@ -123,7 +123,7 @@ def main():
             low_cpu_mem_usage=True,
             ).to(device).eval()
             model=inject_lora(model,target_modules=['q_proj','k_proj','v_proj'],r=args.r_lora_rate,alpha=args.alpha_lora_rate)
-            state=torch.load('ckpt/sft/best_sft.pt',map_location=device)
+            state=torch.load('ckpt/sft/best.pt',map_location=device)
             model.load_state_dict(state,strict=False)
         elif i==2:
             model = AutoModelForCausalLM.from_pretrained(
@@ -132,7 +132,7 @@ def main():
             low_cpu_mem_usage=True,
             ).to(device).eval()
             model=inject_lora(model,target_modules=['q_proj','k_proj','v_proj'],r=args.r_lora_rate,alpha=args.alpha_lora_rate)
-            state=torch.load('ckpt/dpo/best_dpo.pt',map_location=device)
+            state=torch.load('ckpt/dpo/best.pt',map_location=device)
             model.load_state_dict(state,strict=False)
         with torch.no_grad():
             accumulation_step=1
