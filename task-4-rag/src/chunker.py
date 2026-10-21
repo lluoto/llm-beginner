@@ -1,8 +1,13 @@
 import os
 from pypdf import PdfReader
-import random
-random.seed(1111)
+from dataclasses import dataclass
 from collections import Counter
+import re
+@dataclass
+class Node:
+    level:int
+    title:str
+    page:int|None
 def flatten_outline(reader,outline=None,level=0):
     if outline is None:
         outline=reader.outline
@@ -16,10 +21,10 @@ def flatten_outline(reader,outline=None,level=0):
                 page=reader.get_destination_page_number(item)
             except Exception:
                 page=None
-            nodes.append(None(level,title,page))
+            nodes.append(Node(level,title,page))
     return nodes
 def chapter_spans(nodes,n_pages,max_level=0):
-    tops=[n for n in nodes if n.level < max_level and n.page is not None]
+    tops=[n for n in nodes if n.level <= max_level and n.page is not None]
     tops.sort(key=lambda n:n.page)
     spans=[]
     if tops and tops[0].page > 0:
@@ -82,12 +87,11 @@ def is_existing_file(obj):
     if isinstance(name,(str,bytes,os.PathLike)):
         return bool(name) and os.path.isfile(name)
     return False
-def chunks_text(sample,chunk_size,overlap=32):
-    if overlap>chunk_size:
+def chunk_text(sample,chunk_size,overlap=32):
+    if overlap>=chunk_size:
         raise ValueError('overlap must be smaller than size')
     
     if is_existing_file(sample):
-        reader=PdfReader(sample)
         chapters=extract_chapters(sample,max_level=0,layout=False)
         cleaned=strip_running_lines([c['text'] for c in chapters])
         for c,t in zip(chapters,cleaned):
@@ -101,18 +105,25 @@ def chunks_text(sample,chunk_size,overlap=32):
     else:
         candidate_text=sample
     fragment_sen=[]
-    def split_sentence(sentence):
-        while len(sentence)<chunk_size:
-            frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
-            overlap_start=frustrate_chunk-overlap
-            current,sentence=sentence[:frustrate_chunk],sentence[overlap_start:]
-            fragment_sen.append(current)
-    if isinstance(candidate_text,type(list)):
+    overlap_start=chunk_size-overlap
+
+    def split_sentence(chap_sentence):
+        buffer=''
+        for current in re.split(r'(?<=[。！？.!?\n])',chap_sentence):
+            if buffer and len(buffer)+len(current)>chunk_size:
+                fragment_sen.append(buffer)
+                buffer=buffer[-overlap:] if overlap else ''
+            buffer+=current
+            while len(buffer)>=chunk_size:
+                excepted_chunk,buffer=buffer[:chunk_size],buffer[overlap_start:]
+                fragment_sen.append(excepted_chunk)
+
+        if buffer.strip():
+            fragment_sen.append(buffer)
+    if isinstance(candidate_text,list):
         for chap in candidate_text:
-            chap_sentence=chap.strip('\n ').split('。')
-            for sentence in range(len(chap_sentence)):
-                split_sentence(sentence)
+            split_sentence(chap)
     else:
-        candidate_text=candidate_text.strip('\n ').split('。')
         split_sentence(candidate_text)
+        
     return fragment_sen

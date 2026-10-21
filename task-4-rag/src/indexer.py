@@ -15,4 +15,4 @@ def index_generator(sample,chunk_size,overlap):
         index=faiss.IndexFlatIP(L2_pervious.shape[-1])
         index.append(L2_pervious)
         dist,idx=index.search(L2_current)
-        return idx
+    
