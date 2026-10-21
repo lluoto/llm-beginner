@@ -1,7 +1,5 @@
 import os
 from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
-import torch
 import random
 random.seed(1111)
 from collections import Counter
@@ -68,7 +66,6 @@ def strip_running_lines(texts, min_ratio=0.5, max_len=60):
         return texts
     bad = {l for l, c in cnt.items() if c / n >= min_ratio and len(l) <= max_len}
     return ["\n".join(l for l in t.splitlines() if l.strip() not in bad) for t in texts]
-device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def is_existing_file(obj):
     if obj is None:
@@ -88,7 +85,6 @@ def is_existing_file(obj):
 def chunks_text(sample,chunk_size,overlap=32):
     if overlap>chunk_size:
         raise ValueError('overlap must be smaller than size')
-    model=SentenceTransformer('model/bge-small-zh-v1.5',device=device)
     
     if is_existing_file(sample):
         reader=PdfReader(sample)
@@ -104,26 +100,19 @@ def chunks_text(sample,chunk_size,overlap=32):
             
     else:
         candidate_text=sample
-
+    fragment_sen=[]
+    def split_sentence(sentence):
+        while len(sentence)<chunk_size:
+            frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
+            overlap_start=frustrate_chunk-overlap
+            current,sentence=sentence[:frustrate_chunk],sentence[overlap_start:]
+            fragment_sen.append(current)
     if isinstance(candidate_text,type(list)):
-        embed_vectors=[]
-
         for chap in candidate_text:
             chap_sentence=chap.strip('\n ').split('。')
             for sentence in range(len(chap_sentence)):
-                while len(sentence)<chunk_size:
-                    frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
-                    overlap_start=frustrate_chunk-overlap
-                    current,sentence=sentence[:frustrate_chunk],sentence[overlap_start:]
-                    embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
+                split_sentence(sentence)
     else:
         candidate_text=candidate_text.strip('\n ').split('。')
-        embed_vectors=[]
-        for i in range(len(candidate_text)):
-            while len(candidate_text)<chunk_size:
-                frustrate_chunk=round(chunk_size*random.uniform(0.5,1.2))
-
-                overlap_start=frustrate_chunk-overlap
-                current,candidate_text=candidate_text[:frustrate_chunk],candidate_text[overlap_start:]
-                embed_vectors.append(model.encode(current,normalize_embeddings=True,batch_size=chunk_size,convert_to_tensor=True))
-    return embed_vectors
+        split_sentence(candidate_text)
+    return fragment_sen
