@@ -61,8 +61,8 @@ def build_sft_batch(file_dir,model,max_len=512,pad_token_id=151643
         sessions_list=[]
         input_ids,input_labels=[],[]
         for turn in sessions['chat']:
-            clean_response=clean_moss(sessions['chat'][turn]['MOSS'], '<|MOSS|>:', '<eom>')
-            sessions_list.append({'role':'user','content':clean_moss(sessions['chat'][turn]['Human'], '<|Human|>:', '<eoh>')})
+            clean_response=clean_moss(sessions['chat'][turn]['MOSS'], 'MOSS', '<eom>')
+            sessions_list.append({'role':'user','content':clean_moss(sessions['chat'][turn]['Human'], 'Human', '<eoh>')})
             sessions_list.append({'role':'assistant','content':clean_response})
         input_id=model(format_messages(sessions_list), truncation=True,max_length=int(max_len),return_tensors="pt").input_ids[0]
         input_label=build_labels(input_id,sessions_list)
