@@ -11,8 +11,8 @@ def format_messages(msgs):
     round_chat=['<|im_start|>system\nYou are a helpful assistant<|im_end|>\n']
     for message in msgs:
         round_chat.append(
-'<|im_start|>{role}\n{content}<|im_end|>\n'.format(role=message['role'],content=message['content'])
-            )
+            f"<|im_start|>{message['role']}\n{message['content']}<|im_end|>\n"
+        )
 
     return "".join(round_chat)
 def build_labels(ids,msgs,max_len=64):
@@ -31,8 +31,9 @@ def build_labels(ids,msgs,max_len=64):
             labels[i]=-100
             megs_id+=1
         elif ids[i]==end_id:
+            if in_assistant:
+                labels[i]=ids[i]
             in_assistant=False
-            labels[i]=-100
         elif in_assistant:
             labels[i]=ids[i]
     return labels
